@@ -55,8 +55,8 @@ public class CardServiceImpl implements CardService{
 		int count1=stationDao.getStationNameCount(destinationStation);
 		if(count1<=0)
 			return "please enter valid station name";
-		int sourceStationId=stationDao.getStationNameCount(sourceStationName);
-		int destinationStationId=stationDao.getStationNameCount(destinationStation);
+		int sourceStationId=stationDao.getStationId(sourceStationName);
+		int destinationStationId=stationDao.getStationId(destinationStation);
 		int minus;
 		if(sourceStationId > destinationStationId)
 		{
@@ -66,9 +66,9 @@ public class CardServiceImpl implements CardService{
 		{
 			minus= destinationStationId-sourceStationId;
 		}
-		int updatedCardAmount=cardDao.setcardSwipeStatus(id1,"false");
-		int updatedSwipeStatus=cardDao.updateCardAmount(id1,minus*5);
-		if(updatedSwipeStatus >0)
+		int updatedCardAmount=cardDao.updateCardAmount(id1,minus*5);
+		int updatedSwipeStatus=cardDao.setcardSwipeStatus(id1,"false");
+		if(updatedSwipeStatus >0 && updatedCardAmount>0)
 		{
 			return "Successfully completed your journey";
 		}

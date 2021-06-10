@@ -56,6 +56,7 @@ public class CardDaoImpl implements CardDao {
 		resultsetQ.next();
 		String name="";
 	 name=resultsetQ.getString("swipeStatus");
+	 connection.close();
 		return name;
 	}
 
@@ -69,7 +70,7 @@ public class CardDaoImpl implements CardDao {
 		ResultSet resultset=statement.executeQuery();
 		resultset.next();
 		int amount=resultset.getInt("amount");
-		
+		connection.close();
 		return amount;
 	}
 
@@ -82,6 +83,7 @@ public class CardDaoImpl implements CardDao {
 		statement.setString(1,swipeStatus);
 		statement.setInt(2,id);
 		int value=statement.executeUpdate();
+		connection.close();
 		return value;
 	}
 
@@ -100,6 +102,7 @@ public class CardDaoImpl implements CardDao {
 		statement1.setInt(1,temp);
 		statement1.setInt(2,id1);
 		int value=statement1.executeUpdate();
+		connection.close();
 		return value;
 	}
 
@@ -118,6 +121,7 @@ public class CardDaoImpl implements CardDao {
 		statement1.setInt(1,temp1);
 		statement1.setInt(2,id2);
 		int value1=statement1.executeUpdate();
+		connection.close();
 		return value1;
 		
 	}
@@ -142,6 +146,7 @@ public class CardDaoImpl implements CardDao {
 			card.setAmount(resultset.getInt("amount"));
 		
 		}
+		connection.close();
 		return card;
 	}
 
@@ -156,7 +161,7 @@ public class CardDaoImpl implements CardDao {
 		int idval=0;
 		
 		 idval=resultsetone.getInt("countVal");
-		
+		 connection.close();
 		return idval;
 
 	}

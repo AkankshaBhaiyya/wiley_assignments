@@ -68,7 +68,7 @@ public class CardPresentationImpl implements CardPresentation {
 		}
 		catch(ClassNotFoundException | SQLException e)
 		{
-			//e.printStackTrace();
+			e.printStackTrace();
 			System.out.println(e.getMessage());
 		}
 			

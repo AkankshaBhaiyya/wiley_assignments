@@ -21,6 +21,7 @@ public class StationDaoImpl implements StationDao{
 		ResultSet resultset=statement.executeQuery();
 		resultset.next();
 		int count=resultset.getInt("countVal");
+		connection.close();
 		return count;
 	}
 
@@ -47,6 +48,19 @@ public class StationDaoImpl implements StationDao{
 		connection.close();
 
 		return stations;
+	}
+
+	@Override
+	public int getStationId(String stationName) throws SQLException, ClassNotFoundException {
+		// TODO Auto-generated method stub
+		Connection connection = MysqlConnection.getConnection();
+		PreparedStatement statement = connection.prepareStatement("select id as countVal from station where name=?");
+		statement.setString(1,stationName);
+		ResultSet resultset=statement.executeQuery();
+		resultset.next();
+		int sid=resultset.getInt("countVal");
+		connection.close();
+		return sid;
 	}
 
 }
