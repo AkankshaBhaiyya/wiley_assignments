@@ -1,6 +1,6 @@
 package org.metro.persistence;
 
-import java.sql.Connection; 
+import java.sql.Connection;  
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,7 +36,7 @@ public class CardDaoImpl implements CardDao {
 			int idval=0;
 			
 			 idval=resultsetone.getInt("id");
-			
+			 
 			return idval;
 		}
 
@@ -55,6 +55,7 @@ public class CardDaoImpl implements CardDao {
 		ResultSet resultsetQ=statementQ.executeQuery();
 		resultsetQ.next();
 		String name="";
+		
 	 name=resultsetQ.getString("swipeStatus");
 	 connection.close();
 		return name;
@@ -107,19 +108,19 @@ public class CardDaoImpl implements CardDao {
 	}
 
 	@Override
-	public int rechargeCardAmount(int id2, int amount) throws SQLException, ClassNotFoundException {
+	public int rechargeCardAmount(int amount, int id) throws SQLException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		Connection connection = MysqlConnection.getConnection();
 
 		PreparedStatement statement = connection.prepareStatement("select amount from card where id=?");
-		statement.setInt(1,id2);
+		statement.setInt(1,id);
 		ResultSet resultset=statement.executeQuery();
 		resultset.next();
 		int amount2=resultset.getInt("amount");
         int temp1=amount2+amount;
 		PreparedStatement statement1 = connection.prepareStatement("update card set amount=? where id=?");
 		statement1.setInt(1,temp1);
-		statement1.setInt(2,id2);
+		statement1.setInt(2,id);
 		int value1=statement1.executeUpdate();
 		connection.close();
 		return value1;

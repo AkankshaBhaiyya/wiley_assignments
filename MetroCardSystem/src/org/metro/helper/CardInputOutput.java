@@ -19,6 +19,13 @@ public class CardInputOutput {
          
 		return card;
 	}
+	public static String inputStationName()
+	{
+		Scanner scanner=new Scanner(System.in);
+		System.out.println("Enter station name");
+		String stationName=scanner.next();
+		return stationName;
+	}
 	public static ArrayList cardSwipeIn()
 	{
 		
@@ -41,15 +48,13 @@ public class CardInputOutput {
 		alo.add(1,scanner.next());
 		return alo;
 	}
-	public static ArrayList cardRecharge()
+	public static int cardRecharge()
 	{
 		Scanner scanner=new Scanner(System.in);
-		ArrayList alr=new ArrayList();
-		System.out.println("Enter card Id ");
-		alr.add(0,scanner.nextInt());
+	
 		System.out.println("Enter amount to recharge");
-		alr.add(1,scanner.nextInt());
-		return alr;	
+		int amount=scanner.nextInt();
+		return amount;	
 	}
 	public static int idInput()
 	{
