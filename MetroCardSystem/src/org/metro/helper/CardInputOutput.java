@@ -1,5 +1,6 @@
 package org.metro.helper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -8,7 +9,6 @@ import org.metro.bean.Card;
 
 public class CardInputOutput {
 	public static Card inputCard() {
-	
 		Scanner scanner=new Scanner(System.in);
 		
 		Card card=new Card();
@@ -19,16 +19,8 @@ public class CardInputOutput {
          
 		return card;
 	}
-	public static String inputStationName()
-	{
-		Scanner scanner=new Scanner(System.in);
-		System.out.println("Enter station name");
-		String stationName=scanner.next();
-		return stationName;
-	}
 	public static ArrayList cardSwipeIn()
 	{
-		
 		Scanner scanner=new Scanner(System.in);
 		ArrayList al=new ArrayList();
 		System.out.println("Enter card Id ");
@@ -39,7 +31,6 @@ public class CardInputOutput {
 	}
 	public static ArrayList cardSwipeOut()
 	{
-		
 		Scanner scanner=new Scanner(System.in);
 		ArrayList alo=new ArrayList();
 		System.out.println("Enter card Id ");
@@ -48,13 +39,15 @@ public class CardInputOutput {
 		alo.add(1,scanner.next());
 		return alo;
 	}
-	public static int cardRecharge()
+	public static ArrayList cardRecharge()
 	{
 		Scanner scanner=new Scanner(System.in);
-	
+		ArrayList alr=new ArrayList();
+		System.out.println("Enter card Id ");
+		alr.add(0,scanner.nextInt());
 		System.out.println("Enter amount to recharge");
-		int amount=scanner.nextInt();
-		return amount;	
+		alr.add(1,scanner.nextInt());
+		return alr;	
 	}
 	public static int idInput()
 	{
@@ -63,5 +56,18 @@ public class CardInputOutput {
 		int idval=scanner.nextInt();
 		return idval;
 	}
-
+	public static int amountInput()
+	{
+		Scanner scanner=new Scanner(System.in);
+		System.out.println("Enter amount");
+		int amount=scanner.nextInt();
+		return amount;
+	}
+    public static int stationnameInput()
+    {
+    	Scanner scanner=new Scanner(System.in);
+		System.out.println("Enter station id");
+		int stid=scanner.nextInt();
+		return stid;	
+    }
 }

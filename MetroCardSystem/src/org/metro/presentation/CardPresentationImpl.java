@@ -1,270 +1,275 @@
 package org.metro.presentation;
 
+import java.io.IOException;
 import java.sql.SQLException;
-
 import java.util.Collection;
 
 import org.metro.bean.Card;
+import org.metro.bean.Station;
+import org.metro.exception.StationNameException;
+import org.metro.exception.TimeExcludedException;
 import org.metro.helper.CardInputOutput;
 import org.metro.service.CardService;
 import org.metro.service.CardServiceImpl;
-import org.metro.service.StationService;
-import org.metro.service.StationServiceImpl;
-
-
-import org.metro.bean.Station;
-
-import org.metro.helper.CardInputOutput;
 
 public class CardPresentationImpl implements CardPresentation {
 
 	private CardService cardService=new CardServiceImpl();
-	private StationService stationService=new StationServiceImpl();
 	@Override
 	public void showMenu() {
-		System.out.println("***************************************");
 		System.out.println("WELCOME TO METRO CARD SYSTEM");
 		System.out.println("1. Register User");
-		System.out.println("2. Perform swipe operation");
+		System.out.println("2. Swipe operation");
 		System.out.println("3. Recharge");
-		System.out.println("4. Display Details Of Particular card");
-		System.out.println("5. Display list of stations");
-		System.out.println("6. Exit");
-		System.out.println("***************************************");
+		System.out.println("4. Display");
+		System.out.println("5. Exit");
 	}
 
 	@Override
 	public void performMenu(int choice) {
 		switch(choice) {
 		case 1:try {
-			int idval=cardService.insertCard(CardInputOutput.inputCard());
-			if(idval > 0)
-				System.out.println("Your card id is : "+ idval);
+			int id=cardService.insertCard(CardInputOutput.inputCard());
+			if(id >0) {
+				System.out.println("Card created Succefully with id : "+id);
+			}
 			else
 				System.out.println("Card creation Failed");
 		} catch (ClassNotFoundException | SQLException e) {
-			//e.printStackTrace();
 			System.out.println(e.getMessage());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 			
 			break;
-		case 2: try {
-			int cnt=0,cnt3=0,cnt2=0;
-			do {
-			int idval=CardInputOutput.idInput();
-			int idCount=cardService.getCardIdCount(idval);
-			if(idCount>0)
-			{  
-				boolean swipeStatus=cardService.getCardSwipeStatus(idval);
-				if(swipeStatus==false)
+		case 2:try {
+			int idwrong=0;
+			int minamount=0;
+			int cardstatus=0;
+			int recharge=0;
+			Collection<Station> stations=null;	
+			while(idwrong==0) {
+			int id=CardInputOutput.idInput();
+			if(id>0)
+			{
+				cardstatus=cardService.getCardStatus(id);
+				if(cardstatus==0)
 				{
-					do {
-					int getMinAccount=cardService.getAmountInfo(idval);
-					if(getMinAccount>=100) {
-					do {
-					System.out.println("*********************");
-					Collection<Station> stations1=null;
-					stations1 = stationService.getAllStations();
-					System.out.format("%-20s %-20s\n","Station Id","Station Name");
-					for(Station station:stations1) {
-						 
-						   System.out.format("%-20s %-20s\n",station.getId(),station.getName());
-						
-					}
-					System.out.println("*********************");
-					System.out.println("PLEASE perform SWIPE IN");
-					String stationName=CardInputOutput.inputStationName();
-					int stationNameCheck=cardService.checkStationName(stationName);
-					
-					if(stationNameCheck > 0)
+					System.out.println("swipein");
+					while(recharge==0) {
+					minamount=cardService.getServiceCardAmount(id);
+					if(minamount>0)
 					{
-						int swipeupdate=cardService.setSwipeIn(stationName,idval);
-						if(swipeupdate>0) {
-						System.out.println("Your journey succesfully started at "+stationName);
-						cnt=0;
-						cnt2=0;
-						cnt3=0;
-						}
-						else
-						{
-							System.out.println("Error occured while updating swipestatus");
-						}
+					    stations=cardService.getStations();
+					    System.out.format("%-15s%-15s\n","ID","Name");
+					    for(Station s:stations)
+					    {
+					    	System.out.format("%-15s%-15s\n",s.getId(),s.getName());
+					    }
+					    int sourcestation=CardInputOutput.stationnameInput();
+					    int sourcecnt=cardService.getStationId(sourcestation);
+					    if(sourcecnt>0)
+					    {
+					    	String sourcename=cardService.getStationName(sourcestation);
+					    	int cnt=cardService.setSourceStation(id,sourcename);
+					    	if(sourcename!=null && cnt>0 ) {
+					    	System.out.println("Your journey successfully started at "+sourcename);
+					    	}
+					    }
+					    else
+					    {
+					      throw new StationNameException("You entered wrong ID");	
+					    }
+						recharge=1;
 					}
 					else
 					{
-					   System.out.println("Please enter correct station name");	
-					   cnt3=1;
+						int amountwrong=0;
+						System.out.println("As you dont have minimum amount please recharge");
+						while(amountwrong==0) {
+			                int amount=CardInputOutput.amountInput();
+			                if(amount>0) {
+			                int recharge1=cardService.getRechargeStatus(id,amount);
+			                if(recharge1>0) {
+			            	 recharge=1;
+			            	
+			            	idwrong=1;
+			            	amountwrong=1;
+			            	}
+			                else
+			                {
+			                	System.out.println("Recharge Failed");
+			                	idwrong=0;
+			                	recharge=0;
+			                }
+			                }
+			                else
+			                {
+			                	System.out.println("Amount should be positive number");
+			                	amountwrong=0;
+			                	recharge=0;
+			                }
+							}
+						recharge=0;
 					}
-					}while(cnt3==1);
 					}
-					else
-					{
-						System.out.println("You have to recharge as you dont have minimum amount in your card");
-						int acnt=0;
-						do {
-	            				int amount=CardInputOutput.cardRecharge();
-	            				if(amount>0) {
-	            					
-	            					int recharge=cardService.rechargeCard(amount,idval);
-	            					System.out.println("Successfully Recharged");
-	            					cnt2=1;
-	            					cnt3=1;
-	            				}
-	            				else
-	            				{
-	            					System.out.println("Enter amount greater than 0");
-			    	                acnt=1;
-	            				}
-	            			  }while(acnt==1);
-					}
-					}while(cnt2==1);
-				}
-				else if(swipeStatus==true)
-				{
-				
-					do {
-					System.out.println("*********************");
-					Collection<Station> stations1=null;
-					stations1 = stationService.getAllStations();
-					System.out.format("%-20s %-20s\n","Station Id","Station Name");
-					for(Station station:stations1) {
-						 
-						   System.out.format("%-20s %-20s\n",station.getId(),station.getName());
-						
-					}
-					System.out.println("*********************");
-					System.out.println("PLEASE perform SWIPE OUT");
-					String stationName1=CardInputOutput.inputStationName();
-					int stationNameCheck1=cardService.checkStationName(stationName1);
-					
-					if(stationNameCheck1 > 0)
-					{
-						int swipeupdate1=cardService.setSwipeOut(stationName1,idval);
-						if(swipeupdate1>0) {
-						System.out.println("Your journey succesfully ended at "+stationName1);
-						cnt=0;
-						cnt3=0;
-						}
-						else
-						{
-							System.out.println("Error occured while updating account");
-						}
-					}
-					else
-					{
-					   System.out.println("Please enter correct station name");
-					   cnt3=1;
-					   
-					}
-					}while(cnt3==1);
-				}
-			}
-			else
-			{
-				System.out.println("Sorry your card id is incorrect");
-				cnt=1;
-			}
-			}while(cnt==1);//////////////////////////////////////////////////////////////////
-			}
-			catch(ClassNotFoundException | SQLException e)
-			{
-				e.printStackTrace();
-				System.out.println(e.getMessage());
-			}
-			break;
-		case 3:
-			try {
-				int cnt=0,cnt2=0;
-	            do {
-	            		int idval=CardInputOutput.idInput();
-	            		int idCount=cardService.getCardIdCount(idval);
-	            		if(idCount>0) {
-	            			  do {
-	            				int amount=CardInputOutput.cardRecharge();
-	            				if(amount>0) {
-	            					int recharge=cardService.rechargeCard(amount,idval);
-	            					System.out.println("Successfully Recharged");
-	            					Card cards=null;
-	            					cards = cardService.getCardById(idval);
-	            					if(cards!=null) {
-	            						 System.out.format("%-20s %-20s %-20s %-20s\n","Card Id","Name","SwipeStatus","Amount");
-	            						   System.out.format("%-20s %-20s %-20s %-20s\n",cards.getId(),cards.getName(),cards.getSwipeStatus(),cards.getAmount());
-	            						
-	            					     }
-	            					cnt2=0;
-	            					cnt=0;
-	            				}
-	            				else
-	            				{
-	            					System.out.println("Enter amount greater than 0");
-			    	                cnt2=1;
-	            				}
-	            			  }while(cnt2==1);
-	            		}
-	            		else
-	            		{
-	            			System.out.println("Sorry your card id is incorrect");
-	            			cnt=1;
-	            		}
-				}while(cnt==1);
-				
-			}
-			catch(ClassNotFoundException | SQLException e)
-			{
-				e.printStackTrace();
-				System.out.println(e.getMessage());
-			}
-			break;
-		case 4:
-			Card cards=null;
-			try {
-				int cnt=0;
-				do {
-				int idval=CardInputOutput.idInput();
-				int idCount=cardService.getCardIdCount(idval);
-				if(idCount>0) {
-				cards = cardService.getCardById(idval);
 				}
 				else
 				{
-					System.out.println("Sorry your card id is incorrect");
-					cnt=1;
+					System.out.println("swipeout");
+			        int time=cardService.getTimeGap(id);
+					stations=cardService.getStations();
+					 System.out.format("%-15s%-15s\n","ID","Name");
+				    for(Station s:stations)
+				    {
+				    	System.out.format("%-15s%-15s\n",s.getId(),s.getName());
+				    }
+				    int sourcestation=CardInputOutput.stationnameInput();
+				    int sourcecnt=cardService.getStationId(sourcestation);
+				    if(sourcecnt>0)
+				    {
+				    	String destinationname=cardService.getStationName(sourcestation);
+				    	int cnt=cardService.setDestinationStation(id,destinationname);
+				    	if(destinationname!=null && cnt>0 ) {
+				        if(time==1) {		
+				    	System.out.println("Your journey successfully ended at "+ destinationname);
+				        }
+				        else
+				        {
+				        	System.out.println("Your journey successfully ended at "+ destinationname+" with Rs 75 fine");
+				        }
+				    	}
+				    }
+				    else
+				    {
+				      throw new StationNameException("You entered wrong ID");	
+				    }
 				}
-				}while(cnt==1);
-			} catch (ClassNotFoundException | SQLException e) {
-				
-				//e.printStackTrace();
+				idwrong=1;
+			}
+			else
+			{
+			  System.out.println("ID should be positive number");
+			  idwrong=0;
+			}
+			}}
+			catch (ClassNotFoundException | SQLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			catch(StationNameException e)
+			{
 				System.out.println(e.getMessage());
 			}
-			   if(cards!=null) {
-				   System.out.format("%-20s %-20s %-20s %-20s\n","Card Id","Name","SwipeStatus","Amount");
-				   System.out.format("%-20s %-20s %-20s %-20s\n",cards.getId(),cards.getName(),cards.getSwipeStatus(),cards.getAmount());
+			break;
+		case 3:Card cards=null;
+			try {
+				
+				int  idwrong=0;
+				int amountwrong=0;
+				while(idwrong==0) {
+					int id=CardInputOutput.idInput();
+					if(id>0) {
+					int idcnt=cardService.getIdcnt(id);
+					if(idcnt>0)
+					{
+						while(amountwrong==0) {
+		                int amount=CardInputOutput.amountInput();
+		                if(amount>0) {
+		                int recharge=cardService.getRechargeStatus(id,amount);
+		                if(recharge>0) {
+		            	cards = cardService.getCardById(id);
+		            	if(cards!=null)
+		            	{
+		            		System.out.format("%-15s%-15s%-15s%-15s\n","ID","Name","SwipeStatus","Amount");
+		            		System.out.format("%-15s%-15s%-15s%-15s\n",cards.getId(),cards.getName(),cards.getSwipeStatus(),cards.getAmount());
+		            	}
+		            	idwrong=1;
+		            	amountwrong=1;
+		            	}
+		                else
+		                {
+		                	System.out.println("Recharge Failed");
+		                	idwrong=0;
+		                }
+		                }
+		                else
+		                {
+		                	System.out.println("Amount should be positive number");
+		                	amountwrong=0;
+		                }
+						}
+					}
+					else
+					{
+						System.out.println("Entered Id is incorrect");
+		            	idwrong=0;
+					}
+					}
+					else
+					{
+						System.out.println("ID should be positive number");
+						idwrong=0;
+					}
 				}
-			   else
-			   {
-				   System.out.println("This is was eliminated becuase of entering duplicate name");
-			   }
+			}
+			catch(ClassNotFoundException | SQLException e)
+			{
+				e.printStackTrace();
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+			if(cards!=null) {
+				System.out.println(cards);
+			}
+			break;
+		case 4:
+			Card cards1=null;
+			try {
+				int  idwrong=0;
+				while(idwrong==0) {
+				int id=CardInputOutput.idInput();
+				if(id>0) {
+				int idcnt=cardService.getIdcnt(id);
+	            if(idcnt > 0) {
+	            idwrong=1;
+				cards1 = cardService.getCardById(id);
+				
+				}
+	            else
+	            {
+	            	System.out.println("Entered Id is incorrect");
+	            	idwrong=0;
+	            }}
+				else
+				{
+					System.out.println("Id should be positive number");
+				 	idwrong=0;
+				}
+				}
+			} catch (ClassNotFoundException | SQLException e) {
+				
+				e.printStackTrace();
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+			if(cards1!=null) {
+				System.out.format("%-15s%-15s%-15s%-15s\n","ID","Name","SwipeStatus","Amount");
+				System.out.format("%-15s%-15s%-15s%-15s\n",cards1.getId(),cards1.getName(),cards1.getSwipeStatus(),cards1.getAmount());
 		
+			}
 			break;
-		case 5:Collection<Station> stations=null;
-		try {
-			stations = stationService.getAllStations();
-		} catch (ClassNotFoundException | SQLException e) {
-			
-			//e.printStackTrace();
-			System.out.println(e.getMessage());
-		}
-		System.out.format("%-20s %-20s\n","Station Id","Station Name");
-		for(Station station:stations) {
-			 
-			   System.out.format("%-20s %-20s\n",station.getId(),station.getName());
-			
-		}
-			break;
-	
-		case 6:
+		case 5:
 			System.out.println("Thanks for using Metro Card System!!!");
 			System.exit(0);
+			break;
 		default :
 			System.out.println("Invalid Choice");
 		}
